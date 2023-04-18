@@ -3,6 +3,7 @@
 In this section we look at question 1 of the third hand-in. 
 I have mostly copy-pasted my functions from the tutorials, where I worked together with my sister,
 Evelyn van der Kamp (s2138085), so some of our functions are quite similar.
+I have also copied functions from the previous hand-ins, such as Romberg integration and LU decomposition.
 
 \lstinputlisting{NURHW3LizQ1.py}
 
@@ -21,64 +22,149 @@ Here, the first value shows the radius at the maximum, and the second value is $
 
 \subsection{Question 1b}
 
-Here we want to generate 3D satellite positions such that they statistically follow the satellite profile $n(x)$.
-Here I assumed that $N(x)$d$x = 4\pi x^2 n(x)$d$x$, such that the integral from 0 to $x_{max}$ over $N(x)$d$x/<N_{sat}> = 1$, just like a probability distribution should do.
-For this I created a function that uses rejection sampling to sample the distribution.
-This function calls a random number generated which I created during one of the tutorial classes, combining a 64-bit XOR method with an LCG.
-The random number generator can return random numbers between 0 and 1 as long as the size you give it is large enough (only requesting 1 random number between 0 and 1 will always result in 1, since I divide by the largest number in the array to get numbers between 0 and 1, which also means that 1 is always present in the array of random numbers somewhere).
-I create an array of 100 random numbers between 0 and 1, each time with a different seed, then take the first number from that array and transform it into a number between $10^{-4}$ and $x_{max}$, called $x$, then take the second number from that array and transform it into a number $y$ between 0 and the max of $p(x)$d$x$.
-If $y \geq p(x)$ then we reject it, otherwise we accept it into the sample.
-This rejection sampling algorithm is not the fastest one and could be improved if we could invert the probability function and calculate its primitive and then applying the transformation method.
+For this question we aim to calculate the best fit parameters using a $\chi^2$ method. 
+First, I import the functions needed for the Levenberg-Marquardt routine, which is the function for LU decomposition (using the improved Crout's algorithm), functions to swap, scale and add rows, a function calculating the $\chi^2$ value, and finally the functions for the LM routine, including two functions to calculate the $\alpha$ matrix and $\beta$ from the algorithm.
+Other than that, I also import my Romberg integration function to calculate the normalization factor $A$ as well as the variance $\sigma_i^2$.
 
-I sampled $10^4$ satellite galaxies and then created some arrays to plot a log-log plot of $N(x)$ and the histogram, with 20 logarithmically spaced bins.
-For the histogram I used \texttt{plt.hist}, and by taking \texttt{density = True} we divide the bins by their width and divide by the number of counts.
+I created a new function to fit as well as the derivatives with respect to the model parameters $a$, $b$, and $c$.
+I plotted the histograms of the files without predetermined bins and I saw that the maximum radius these satellites reach is about $x = 2.4$, so I took my bin range to be [0,2.4] in real space, since the histogram already followed a nice Poisson distribution in real space.
+I took 24 bins because that looks like the bins show the least variation.
+
+The mean number of satellites is the total number of satellites divided by the number of halos, and the mean number of satellites per halo in bins is given by the total number of satellites in a certain bin divided by the total number of satellites and the binwidth.
+I took [2,0.5,1.6] as my initial guess for $a$, $b$, and $c$, because it is close to the given values from 1(a), where I took into account that my bins only go to $x = 2.4$.
+
+I calculated an initial normalization factor $A$ for these parameters as well as initial variances, by integrating over the whole range [0,5] and integrating over the bins respectively.
+Then I called my LM function to calculate new solutions, and incorporated new $A$ and variance calculations inside this function for each new solution. 
+After a maximum of 50 iterations, I do a final calculation of $A$ and then calculate the predicted values in each bin, but since my calculation of $A$ does not give a precise enough normalization to make the sums of the observed values and the predicted values match up, I scale my predicted bin values so that the total sum matches the observed amount.
+
+The plots showing the best fit results can be seen in Figure \ref{fig:LMfit}
 
 \begin{figure}[ht!]
-  \centering
-  \includegraphics[width=0.9\linewidth]{Probabilityplot.png}
-  \caption{A plot of $x$ versus $p(x)$d$x = N(x)$d$x/<N_{sat}>$, showing $N(x)$ as the black curve and my sampled distribution as a histogram. These both agree quite well with each other.}
-  \label{fig:px}
+\begin{center}
+        \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot11.png}
+    \end{subfigure}
+    %
+    \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot12.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot13.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot14.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot15.png} 
+    \end{subfigure}
+    %
+    \caption{Log-log plots showing the five datasets and the $\chi^2$ best fit with Levenberg-Marquardt routine. The legend shows $<N_{sat}>$ as well as the best fit values and the obtained $\chi^2$ value.}
+    \label{fig:LMfit}
+\end{center}
 \end{figure}
 
-The plot generated can bee seen in Figure \ref{fig:px}, where it can be seen that the histogram and the curve agree well with each other.
-
+The precise results will be shown in the next section, together with the Poisson fit results.
 
 \subsection{Question 1c}
+For this section, we want to calculate the best fit parameters again, but instead of minimizing a $\chi^2$, we want to maximize a Poisson likelihood.
+We can do this by minimizing minus the natural log of the Poisson likelihood.
 
-In this question it was asked to select 100 random satellite galaxies from the sample in (b) in a way that is guaranteed to select every galaxy with equal probability, not draw the same galaxy twice and not reject any draw.
-For this question I imported my Quicksort function created in the tutorials, which consists of two separate functions, one of which sorts the partial arrays and is called by the main function.
-I also imported my swapping function from tutorial 3, which can swap two given entries in an array.
-The Quicksort function has the ability to return the array of indices belonging to the sorted array, which I used here to shuffle the array of sampled positions.
-
-I first created an array of $10^4$ uniform random numbers with my random number generator, then I sorted this array with my Quicksort function and returned the indices to get a shuffled array of $10^4$ indices, which I apply to the sampled positions to shuffle the array.
-Then I took the first 100 positions from that shuffled array to get 100 random satellite galaxies, without repeats, without rejections, having selected them with equal probability.
-
-Afterwards, I sorted those 100 positions with my Quicksort function from smallest to largest radius.
-The number of galaxies within a radius is now equal to 0 at $x = 10^{-4}$ and 100 at $x_{max}$, and it is equal to the one plus the index of the sorted array at the radius that corresponds to the index.
+For this part, I imported a function which applies a Quasi Newton method to minimize in 3D. 
+This function uses the Hessian, as well as the gradient/the derivatives of the log likelihood function with respect to the model parameters to find the minimum. 
+It also uses golden section search to perform line minimization.
+I created the log likelihood function as well as a function for the gradient of that function, used the same initial guess for $a$, $b$, and $c$, and applied the Quasi Newton method to find the best fit.
+Here I calculated $A$ inside the likelihood function instead of inside the minimizing function.
+Afterwards, I did the same as in the previous section: calculated $A$ a final time, calculated the predicted bin values and scaled those to match the observed sum of bin values, and plotted the results.
 
 \begin{figure}[ht!]
-  \centering
-  \includegraphics[width=0.9\linewidth]{Numberplot.png}
-  \caption{A plot of $x$ versus the number of galaxies within that radius. It steadily goes up until it goes flat around $x = 0.8$.}
-  \label{fig:Nr}
+\begin{center}
+        \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot11.png}
+    \end{subfigure}
+    %
+    \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot12.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot13.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot14.png} 
+    \end{subfigure}
+    %
+     \vspace{-10pt}
+    %
+    \begin{subfigure}{.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{LMplot15.png} 
+    \end{subfigure}
+    %
+    \caption{Log-log plots showing the five datasets and the Poisson likelihood best fit with a Quasi Newton routine. The legend shows $<N_{sat}>$ as well as the best fit values and the obtained -ln$L$ value.}
+    \label{fig:QNfit}
+\end{center}
 \end{figure}
 
-The plot generated can bee seen in Figure \ref{fig:Nr}, where it can be seen that the histogram and the curve agree well with each other.
+The plot generated can bee seen in Figure \ref{fig:QNfit}.
+The results of the fitting are given by:
+
+Dataset 1:
+\lstinputlisting{Fitresultsoutput11.txt}
+Dataset 2:
+\lstinputlisting{Fitresultsoutput12.txt}
+Dataset 3:
+\lstinputlisting{Fitresultsoutput13.txt}
+Dataset 4:
+\lstinputlisting{Fitresultsoutput14.txt}
+Dataset 5:
+\lstinputlisting{Fitresultsoutput15.txt}
+
+Here, the first value shows $<N_{sat}>$, the second to fourth values show $a$, $b$, and $c$ obtained by the $\chi^2$ fit, the fifth value shows the minimum $\chi^2$ value, the sixth to eighth values show $a$, $b$, and $c$ obtained by the Poisson -ln$L$ fit, and the last value shows the minimized \ln$L$ obtained.
 
 
 \subsection{Question 1d}
 
-In this part of the question it was asked to numerically calculate d$n(x)/$d$x$ at $x = 1$.
-I imported two functions from the tutorials, one which calculates the derivative of a function using the central difference formula, with stepsize $h$, and one which calls this central difference function and uses Ridder\'s method to calculate the numerical derivative of a function, similar to Romberg integration, by iterating over different solutions. 
-The analytical derivative here is only used to calculate the error and to make sure that it stays below the target error.
-Ridder\'s method is the most accurate, because it takes solutions of different stepsizes and combines them to get to a more accurate result.
+In this section, we were asked to perform a G-test and calculate the Q values corresponding to the $\chi^2$ fit. 
+I took the number of satellites in a bin instead of the mean number, to make sure that we have integers for $O_i$, and I scaled my fitted values to match (multiplied by the total number of halos and binwidth).
+Since there were some zero values for the number of observed values in a bin, so I made a for-loop to calculate the sum, and added zero when $O_i = 0$.
 
-I also made a function that returns the analytical derivative d$n(x)/$d$x = A <N_{sat}> (x^{a-4}/b^{a-3})*\exp(-(x/b)^c)  (a-3-c (x/b)^c)$.
-I took an initial stepsize $h = 0.1$ and iterated with a target error of $10^{-10}$, meaning that the difference between the analytical derivative and the calculated solution needs to go below the target error before the function terminates, or that the max number of iterations has been reached, which I picked to be 100.
-
-The result is as follows:
-
-\lstinputlisting{Derivativeoutput.txt}
+Dataset 1:
+\lstinputlisting{Resultsoutput11.txt}
+Dataset 2:
+\lstinputlisting{Resultsoutput12.txt}
+Dataset 3:
+\lstinputlisting{Resultsoutput13.txt}
+Dataset 4:
+\lstinputlisting{Resultsoutput14.txt}
+Dataset 5:
+\lstinputlisting{Resultsoutput15.txt}
 
 Here the first number shows the result of the analytical derivative, the second number shows the result of the numerical differentiation, and the third number shows the absolute difference between the two.
 
