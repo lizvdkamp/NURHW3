@@ -628,8 +628,9 @@ for nr in range(11,16):
 	#Now calculate the Q 
 	import scipy.special as scp
 	def Qval(x,k):
-		#print(scp.gammainc(k*0.5,x*0.5),scp.gamma(k*0.5))
-		return 1-(scp.gammainc(k*0.5,x*0.5)/scp.gamma(k*0.5))
+		print("G",x, "k",k)
+		print("Gamma's", scp.gammaincc(k*0.5,x*0.5),scp.gamma(k*0.5))
+		return 1-(scp.gammaincc(k*0.5,x*0.5)/scp.gamma(k*0.5))
 		
 	#The number of independent degrees of freedom is the nr of data pts len(Ns) minus the parameters = 3 [a,b,c] minus 1 (because the last one is determined by the rest
 	k = len(Ns)-4
