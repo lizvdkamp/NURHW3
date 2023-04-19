@@ -6,9 +6,10 @@ Evelyn van der Kamp (s2138085), so some of our functions are quite similar.
 We also both made use of global variables in this exercise, but we could not figure out how to do this differently.
 I have also copied functions from the previous hand-ins, such as Romberg integration and LU decomposition.
 
-\lstinputlisting{NURHW3LizQ1.py}
-
 \subsection{Question 1a}
+
+Code for 1(a):
+\lstinputlisting[lastline=85]{NURHW3LizQ1.py}
 
 In this section I took my function from the previous hand-in for $4 \pi n(x) x^2$, now with A given.
 I also made a function which returns $-4 \pi n(x) x^2$, because finding the minimum of that function is the same as finding the maximum of the positive function.
@@ -22,6 +23,9 @@ Here, the first value shows the radius at the maximum, and the second value is $
 
 
 \subsection{Question 1b}
+
+Code for both 1(b) and partly for 1(c), because the functions for 1(c) are created before the loop where I fit and plot 1(b):
+\lstinputlisting[firstline=85, lastline=548]{NURHW3LizQ1.py}
 
 For this question we aim to calculate the best fit parameters using a $\chi^2$ method. 
 First, I import the functions needed for the Levenberg-Marquardt routine, which is the function for LU decomposition (using the improved Crout's algorithm), functions to swap, scale and add rows, a function calculating the $\chi^2$ value, and finally the functions for the LM routine, including two functions to calculate the $\alpha$ matrix and $\beta$ from the algorithm.
@@ -83,6 +87,10 @@ The plots showing the best fit results can be seen in Figure \ref{fig:LMfit}
 The precise results will be shown in the next section, together with the Poisson fit results.
 
 \subsection{Question 1c}
+
+Fitting part of the code for 1(c):
+\lstinputlisting[firstline=548, lastline=607]{NURHW3LizQ1.py}
+
 For this section, we want to calculate the best fit parameters again, but instead of minimizing a $\chi^2$, we want to maximize a Poisson likelihood.
 We can do this by minimizing minus the natural log of the Poisson likelihood.
 
@@ -151,6 +159,9 @@ Here, the first value shows $<N_{sat}>$, the second to fourth values show $a$, $
 
 
 \subsection{Question 1d}
+
+Code for 1(d):
+\lstinputlisting[firstline=607]{NURHW3LizQ1.py}
 
 In this section, we were asked to perform a G-test and calculate the Q values corresponding to the $\chi^2$ fit. 
 I took the number of satellites in a bin instead of the mean number, to make sure that we have integers for $O_i$, and I scaled my fitted values to match (multiplied by the total number of halos and binwidth).
