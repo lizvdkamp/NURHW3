@@ -154,6 +154,7 @@ Here, the first value shows $<N_{sat}>$, the second to fourth values show $a$, $
 In this section, we were asked to perform a G-test and calculate the Q values corresponding to the $\chi^2$ fit. 
 I took the number of satellites in a bin instead of the mean number, to make sure that we have integers for $O_i$, and I scaled my fitted values to match (multiplied by the total number of halos and binwidth).
 Since there were some zero values for the number of observed values in a bin, so I made a for-loop to calculate the sum, and added zero when $O_i = 0$.
+Here, the number of independent degrees of freedom $k$ is given by the number of bins, minus 3 because we want to calculate 3 fit parameters ($a$, $b$, and $c$), and then minus 1 because we want the independent degrees of freedom, and the last bin is uniquely determined by the previous bins once we know the fit parameters.
 
 Dataset 1:
 \lstinputlisting{Resultsoutput11.txt}
@@ -166,5 +167,7 @@ Dataset 4:
 Dataset 5:
 \lstinputlisting{Resultsoutput15.txt}
 
-Here,,,,
+Here, the first values are the G test results, for the $\chi^2$ and Poisson fits respectively, and the second values are the Q values for both of the fits.
+It seems like the fits are basically equivalent between Poisson and $\chi^2$, which is a bit strange, since the $\chi^2$ fit should give a biased result. 
+All of them give Q values of very close to one, but the G values are pretty high for the 11-13 (first three) files, while 14 & 15 (last two) fits give better G values and also are a better fit to the data.
 
